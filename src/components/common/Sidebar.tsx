@@ -14,7 +14,9 @@ import {
   GraduationCap,
   Briefcase,
   Layers,
-  ChevronRight
+  ChevronRight,
+  LogOut,
+  ShieldAlert
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole } from '../../types';
@@ -25,7 +27,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMobile }) => {
-  const { currentRole, activeTab, setActiveTab, currentUser, switchRole } = useApp();
+  const { currentRole, activeTab, setActiveTab, currentUser, switchRole, logout } = useApp();
 
   interface NavItem {
     id: string;
@@ -58,7 +60,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMobile }) => {
     { id: 'compliance', label: 'Governance & Audits', icon: ShieldCheck },
   ];
 
-  const navItems = currentRole === 'trainee' ? traineeNav : currentRole === 'trainer' ? trainerNav : adminNav;
+  // Route protection: If logged-in user is a trainee, navigation is strictly trainee
+  const effectiveRole = currentUser.role || currentRole;
+  const navItems = effectiveRole === 'trainee' ? traineeNav : effectiveRole === 'trainer' ? trainerNav : adminNav;
 
   const handleSelect = (id: string) => {
     setActiveTab(id);
@@ -147,12 +151,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMobile }) => {
 
           {/* Quick Demo Role Switcher */}
           <div className="pt-2 border-t border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 block">
-              Quick Role Switch (Demo)
-            </span>
+            <div className="flex items-center justify-between px-3 mb-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Active Role
+              </span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                effectiveRole === 'admin'
+                  ? 'bg-purple-100 text-purple-800'
+                  : effectiveRole === 'trainer'
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : 'bg-blue-100 text-blue-800'
+              }`}>
+                {effectiveRole}
+              </span>
+            </div>
+
             <div className="space-y-1 px-1">
               {[
-                { r: 'trainee' as UserRole, label: 'Trainee View', icon: GraduationCap },
+                { r: 'trainee' as UserRole, label: 'Trainee Hub', icon: GraduationCap },
                 { r: 'trainer' as UserRole, label: 'Trainer Studio', icon: Briefcase },
                 { r: 'admin' as UserRole, label: 'Admin Console', icon: Layers },
               ].map(({ r, label, icon: Icon }) => (
@@ -179,14 +195,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMobile }) => {
           </div>
         </div>
 
-        {/* Footer info */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/60">
-          <div className="flex items-center gap-2 text-slate-500 text-[11px]">
+        {/* Footer info & Logout button */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/60 space-y-2.5">
+          <button
+            id="sidebar-signout-btn"
+            onClick={() => {
+              onCloseMobile();
+              logout();
+            }}
+            className="w-full py-2 px-3 text-xs font-semibold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out Session</span>
+          </button>
+
+          <div className="flex items-center gap-2 text-slate-500 text-[11px] pt-1">
             <HelpCircle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="truncate">Hackathon / College Edition</span>
+            <span className="truncate">RBAC Protected Prototype</span>
           </div>
-          <p className="text-[10px] text-slate-400 mt-1">
-            CAPACITY CONNECT v2.4 • Production Ready
+          <p className="text-[10px] text-slate-400">
+            CAPACITY CONNECT • Multi-Role Access Control
           </p>
         </div>
       </aside>

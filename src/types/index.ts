@@ -13,6 +13,10 @@ export interface User {
   status: 'Active' | 'Inactive' | 'Pending';
 }
 
+export interface AuthAccount extends User {
+  password: string;
+}
+
 export interface Lesson {
   id: string;
   title: string;

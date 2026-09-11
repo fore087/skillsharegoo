@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   User, 
+  AuthAccount,
   UserRole, 
   Course, 
   LiveSession, 
@@ -10,6 +11,8 @@ import {
 } from '../types';
 import { 
   DEMO_USERS, 
+  DEMO_CREDENTIALS,
+  DEFAULT_AUTH_ACCOUNTS,
   INITIAL_COURSES, 
   INITIAL_LIVE_SESSIONS, 
   INITIAL_CERTIFICATES, 
@@ -18,10 +21,24 @@ import {
   ADMIN_SYSTEM_USERS 
 } from '../data/mockData';
 
+interface LoginResult {
+  success: boolean;
+  error?: string;
+  role?: UserRole;
+}
+
+interface SignupResult {
+  success: boolean;
+  error?: string;
+}
+
 interface AppContextType {
   currentUser: User;
   currentRole: UserRole;
+  isAuthenticated: boolean;
   currentView: 'landing' | 'login' | 'signup' | 'dashboard';
+  authMessage: string | null;
+  authAccounts: AuthAccount[];
   activeTab: string;
   courses: Course[];
   liveSessions: LiveSession[];
@@ -32,13 +49,22 @@ interface AppContextType {
   searchQuery: string;
   
   // Actions
+  setAuthMessage: (msg: string | null) => void;
   setCurrentView: (view: 'landing' | 'login' | 'signup' | 'dashboard') => void;
   setActiveTab: (tab: string) => void;
   setSearchQuery: (query: string) => void;
   switchRole: (role: UserRole) => void;
+  login: (email: string, password: string) => LoginResult;
   loginAs: (role: UserRole) => void;
   customLogin: (email: string, role: UserRole) => void;
-  signup: (userData: { name: string; email: string; role: UserRole; department: string; organization: string }) => void;
+  signup: (userData: { 
+    name: string; 
+    email: string; 
+    password: string; 
+    role: 'trainee' | 'trainer'; 
+    department?: string; 
+    organization?: string 
+  }) => SignupResult;
   logout: () => void;
   
   // Course actions
@@ -68,8 +94,51 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Navigation & View State
   const [currentView, setCurrentView] = useState<'landing' | 'login' | 'signup' | 'dashboard'>('landing');
-  const [currentRole, setCurrentRole] = useState<UserRole>('trainee');
-  const [currentUser, setCurrentUser] = useState<User>(DEMO_USERS.trainee);
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
+
+  // Authentication State with localStorage persistence
+  const [authAccounts, setAuthAccounts] = useState<AuthAccount[]>(() => {
+    const saved = localStorage.getItem('cc_auth_accounts_v3');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Ensure all required demo accounts are present
+          const hasTrainee = parsed.some(a => a.email.toLowerCase() === DEMO_CREDENTIALS.trainee.email.toLowerCase());
+          const hasTrainer = parsed.some(a => a.email.toLowerCase() === DEMO_CREDENTIALS.trainer.email.toLowerCase());
+          const hasAdmin = parsed.some(a => a.email.toLowerCase() === DEMO_CREDENTIALS.admin.email.toLowerCase());
+          if (hasTrainee && hasTrainer && hasAdmin) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        // fallback
+      }
+    }
+    return DEFAULT_AUTH_ACCOUNTS;
+  });
+
+  const [currentUser, setCurrentUser] = useState<User>(() => {
+    const saved = localStorage.getItem('cc_auth_user_v3');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // fallback
+      }
+    }
+    return DEMO_USERS.trainee;
+  });
+
+  const [currentRole, setCurrentRole] = useState<UserRole>(() => {
+    return currentUser.role || 'trainee';
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const saved = localStorage.getItem('cc_auth_authenticated_v3');
+    return saved === 'true';
+  });
+
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -116,6 +185,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Sync to localStorage
   useEffect(() => {
+    localStorage.setItem('cc_auth_accounts_v3', JSON.stringify(authAccounts));
+  }, [authAccounts]);
+
+  useEffect(() => {
+    localStorage.setItem('cc_auth_user_v3', JSON.stringify(currentUser));
+  }, [currentUser]);
+
+  useEffect(() => {
+    localStorage.setItem('cc_auth_authenticated_v3', isAuthenticated ? 'true' : 'false');
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     localStorage.setItem('cc_courses_v2', JSON.stringify(courses));
   }, [courses]);
 
@@ -140,57 +221,193 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [notifications]);
 
   // Auth Methods
-  const switchRole = (role: UserRole) => {
-    setCurrentRole(role);
-    setCurrentUser(DEMO_USERS[role] || DEMO_USERS.trainee);
-    setActiveTab('overview');
-  };
+  const login = (email: string, password: string): LoginResult => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
 
-  const loginAs = (role: UserRole) => {
-    switchRole(role);
-    setCurrentView('dashboard');
-  };
-
-  const customLogin = (email: string, role: UserRole) => {
-    const foundUser = systemUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (foundUser) {
-      setCurrentUser(foundUser);
-      setCurrentRole(foundUser.role);
-    } else {
-      const newUser: User = {
-        ...DEMO_USERS[role],
-        email,
-        name: email.split('@')[0].replace('.', ' ').toUpperCase(),
-      };
-      setCurrentUser(newUser);
-      setCurrentRole(role);
+    if (!cleanEmail) {
+      return { success: false, error: 'Please enter your institutional or personal email address.' };
     }
+    if (!cleanPassword) {
+      return { success: false, error: 'Please enter your password.' };
+    }
+
+    // Check against registered accounts (case-insensitive email matching)
+    let account = authAccounts.find(
+      a => a.email.toLowerCase() === cleanEmail && a.password === cleanPassword
+    );
+
+    // Also check DEMO_CREDENTIALS fallback
+    if (!account) {
+      if (cleanEmail === DEMO_CREDENTIALS.trainee.email && cleanPassword === DEMO_CREDENTIALS.trainee.password) {
+        account = { ...DEMO_USERS.trainee, password: DEMO_CREDENTIALS.trainee.password };
+      } else if (cleanEmail === DEMO_CREDENTIALS.trainer.email && cleanPassword === DEMO_CREDENTIALS.trainer.password) {
+        account = { ...DEMO_USERS.trainer, password: DEMO_CREDENTIALS.trainer.password };
+      } else if (cleanEmail === DEMO_CREDENTIALS.admin.email && cleanPassword === DEMO_CREDENTIALS.admin.password) {
+        account = { ...DEMO_USERS.admin, password: DEMO_CREDENTIALS.admin.password };
+      } else if (cleanEmail === 'priya.sharma@capacityconnect.gov' && cleanPassword === DEMO_CREDENTIALS.trainee.password) {
+        account = { ...DEMO_USERS.trainee, password: DEMO_CREDENTIALS.trainee.password };
+      }
+    }
+
+    if (!account) {
+      return {
+        success: false,
+        error: 'Invalid email or password. Please verify your credentials or click a demo account below.',
+      };
+    }
+
+    const userObj: User = {
+      id: account.id,
+      name: account.name,
+      email: account.email,
+      role: account.role,
+      department: account.department,
+      organization: account.organization,
+      avatar: account.avatar,
+      joinedDate: account.joinedDate,
+      phone: account.phone,
+      status: account.status,
+    };
+
+    setCurrentUser(userObj);
+    setCurrentRole(account.role);
+    setIsAuthenticated(true);
     setCurrentView('dashboard');
     setActiveTab('overview');
+    setAuthMessage(`Welcome back, ${account.name}! Signed in as ${account.role.toUpperCase()}.`);
+
+    return { success: true, role: account.role };
   };
 
-  const signup = (userData: { name: string; email: string; role: UserRole; department: string; organization: string }) => {
-    const newUser: User = {
+  const signup = (userData: { 
+    name: string; 
+    email: string; 
+    password: string; 
+    role: 'trainee' | 'trainer'; 
+    department?: string; 
+    organization?: string 
+  }): SignupResult => {
+    const cleanName = userData.name.trim();
+    const cleanEmail = userData.email.trim().toLowerCase();
+    const cleanPassword = userData.password;
+
+    if (!cleanName || cleanName.length < 2) {
+      return { success: false, error: 'Full Name is required (minimum 2 characters).' };
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      return { success: false, error: 'Please enter a valid email address.' };
+    }
+    if (!cleanPassword || cleanPassword.length < 6) {
+      return { success: false, error: 'Password must be at least 6 characters.' };
+    }
+    if (userData.role !== 'trainee' && userData.role !== 'trainer') {
+      return { success: false, error: 'Registration is restricted to Trainee and Trainer roles.' };
+    }
+
+    // Check if email is already taken
+    const exists = authAccounts.some(a => a.email.toLowerCase() === cleanEmail);
+    if (exists) {
+      return { success: false, error: 'An account with this email address already exists. Please sign in.' };
+    }
+
+    const newAccount: AuthAccount = {
       id: `usr-${Date.now()}`,
-      name: userData.name,
-      email: userData.email,
+      name: cleanName,
+      email: cleanEmail,
+      password: cleanPassword,
       role: userData.role,
-      department: userData.department,
-      organization: userData.organization,
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      department: userData.department?.trim() || (userData.role === 'trainer' ? 'Training Faculty' : 'General Trainee Cohort'),
+      organization: userData.organization?.trim() || 'Institutional Capacity Network',
+      avatar: userData.role === 'trainer'
+        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+        : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       joinedDate: 'Just now',
       status: 'Active',
     };
 
-    setSystemUsers(prev => [newUser, ...prev]);
-    setCurrentUser(newUser);
-    setCurrentRole(userData.role);
+    setAuthAccounts(prev => [newAccount, ...prev]);
+
+    // Create user profile (without password)
+    const userObj: User = {
+      id: newAccount.id,
+      name: newAccount.name,
+      email: newAccount.email,
+      role: newAccount.role,
+      department: newAccount.department,
+      organization: newAccount.organization,
+      avatar: newAccount.avatar,
+      joinedDate: newAccount.joinedDate,
+      status: newAccount.status,
+    };
+
+    setSystemUsers(prev => [userObj, ...prev]);
+    setCurrentUser(userObj);
+    setCurrentRole(newAccount.role);
+    setIsAuthenticated(true);
     setCurrentView('dashboard');
     setActiveTab('overview');
+    setAuthMessage(`Account registered successfully! Welcome to your ${newAccount.role.toUpperCase()} Hub, ${newAccount.name}.`);
+
+    // Add welcome notification
+    setNotifications(prev => [
+      {
+        id: `notif-${Date.now()}`,
+        title: 'Account Activated',
+        message: `Welcome to CAPACITY CONNECT! Your ${newAccount.role.toUpperCase()} profile is fully established.`,
+        time: 'Just now',
+        read: false,
+        type: 'system',
+      },
+      ...prev,
+    ]);
+
+    return { success: true };
   };
 
   const logout = () => {
-    setCurrentView('landing');
+    setIsAuthenticated(false);
+    localStorage.removeItem('cc_auth_authenticated_v3');
+    localStorage.removeItem('cc_auth_user_v3');
+    setCurrentView('login');
+    setActiveTab('overview');
+    setAuthMessage('You have been logged out successfully.');
+  };
+
+  const loginAs = (role: UserRole) => {
+    const demo = DEMO_CREDENTIALS[role];
+    if (demo) {
+      login(demo.email, demo.password);
+    } else {
+      switchRole(role);
+      setIsAuthenticated(true);
+      setCurrentView('dashboard');
+    }
+  };
+
+  const switchRole = (role: UserRole) => {
+    const demo = DEMO_USERS[role] || DEMO_USERS.trainee;
+    setCurrentRole(role);
+    setCurrentUser(demo);
+    setActiveTab('overview');
+  };
+
+  const customLogin = (email: string, role: UserRole) => {
+    const found = authAccounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+    if (found) {
+      login(found.email, found.password);
+      return;
+    }
+    const newUser: User = {
+      ...DEMO_USERS[role],
+      email,
+      name: email.split('@')[0].replace('.', ' ').toUpperCase(),
+    };
+    setCurrentUser(newUser);
+    setCurrentRole(role);
+    setIsAuthenticated(true);
+    setCurrentView('dashboard');
     setActiveTab('overview');
   };
 

@@ -1,10 +1,31 @@
-import { User, Course, LiveSession, Certificate, AppNotification, TraineeSubmission, Assessment } from '../types';
+import { User, AuthAccount, Course, LiveSession, Certificate, AppNotification, TraineeSubmission, Assessment } from '../types';
+
+export const DEMO_CREDENTIALS = {
+  trainee: {
+    email: 'trainee@capacityconnect.demo',
+    password: 'trainee123',
+    role: 'trainee' as const,
+    name: 'Priya Sharma',
+  },
+  trainer: {
+    email: 'trainer@capacityconnect.demo',
+    password: 'trainer123',
+    role: 'trainer' as const,
+    name: 'Dr. Marcus Vance',
+  },
+  admin: {
+    email: 'admin@capacityconnect.demo',
+    password: 'admin123',
+    role: 'admin' as const,
+    name: 'Director Elena Rostova',
+  },
+};
 
 export const DEMO_USERS: Record<string, User> = {
   trainee: {
     id: 'usr-trainee-01',
     name: 'Priya Sharma',
-    email: 'priya.sharma@capacityconnect.gov',
+    email: 'trainee@capacityconnect.demo',
     role: 'trainee',
     department: 'Digital Governance & Policy Division',
     organization: 'National Administrative Services',
@@ -16,7 +37,7 @@ export const DEMO_USERS: Record<string, User> = {
   trainer: {
     id: 'usr-trainer-02',
     name: 'Dr. Marcus Vance',
-    email: 'marcus.vance@capacityconnect.org',
+    email: 'trainer@capacityconnect.demo',
     role: 'trainer',
     department: 'Technology & Continuous Education Faculty',
     organization: 'Institute of Public Capacity Building',
@@ -28,7 +49,7 @@ export const DEMO_USERS: Record<string, User> = {
   admin: {
     id: 'usr-admin-03',
     name: 'Director Elena Rostova',
-    email: 'elena.rostova@capacityconnect.gov',
+    email: 'admin@capacityconnect.demo',
     role: 'admin',
     department: 'Executive Oversight & Institutional Planning',
     organization: 'Central Digital Capacity Directorate',
@@ -38,6 +59,27 @@ export const DEMO_USERS: Record<string, User> = {
     status: 'Active',
   },
 };
+
+export const DEFAULT_AUTH_ACCOUNTS: AuthAccount[] = [
+  {
+    ...DEMO_USERS.trainee,
+    password: DEMO_CREDENTIALS.trainee.password,
+  },
+  {
+    ...DEMO_USERS.trainer,
+    password: DEMO_CREDENTIALS.trainer.password,
+  },
+  {
+    ...DEMO_USERS.admin,
+    password: DEMO_CREDENTIALS.admin.password,
+  },
+  // Legacy aliases for backwards compatibility
+  {
+    ...DEMO_USERS.trainee,
+    email: 'priya.sharma@capacityconnect.gov',
+    password: DEMO_CREDENTIALS.trainee.password,
+  },
+];
 
 export const INITIAL_COURSES: Course[] = [
   {
