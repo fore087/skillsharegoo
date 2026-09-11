@@ -89,67 +89,6 @@ export const DEMO_USERS: Record<string, User> = {
     joinedDate: 'Nov 02, 2025',
     phone: '+1 (555) 876-5432',
     status: 'Active',
-    bio: 'Lead Faculty Chair and Senior Cybersecurity & Systems Architect with over 15 years of technical leadership in digital public goods, zero-trust enterprise security, and civil service capacity development.',
-    qualifications: [
-      'Ph.D. in Computer Science & Distributed Systems - Massachusetts Institute of Technology (MIT)',
-      'M.Sc. in Public Policy & Technology Informatics - Oxford University',
-      'Senior Executive Leadership Fellow - Federal Executive Institute'
-    ],
-    workExperience: [
-      {
-        id: 'wexp-1',
-        role: 'Faculty Chair & Lead Curriculum Architect',
-        organization: 'Institute of Public Capacity Building',
-        period: '2022 – Present',
-        description: 'Directing national capacity curriculum in Digital Public Infrastructure (DPI), e-governance API protocols, and zero-trust cybersecurity for 3,400+ ministerial officials.'
-      },
-      {
-        id: 'wexp-2',
-        role: 'Chief Enterprise Systems Architect',
-        organization: 'National Digital Transformation Directorate',
-        period: '2017 – 2022',
-        description: 'Spearheaded federated civil identity gateway architecture, cross-agency data exchange protocols, and sovereign cloud modernization initiatives.'
-      },
-      {
-        id: 'wexp-3',
-        role: 'Associate Professor of Computer Systems',
-        organization: 'State University Faculty of Informatics',
-        period: '2012 – 2017',
-        description: 'Conducted accredited research in resilient distributed consensus algorithms, cryptography, and open-source public service software engineering.'
-      }
-    ],
-    expertise: [
-      'Digital Public Infrastructure (DPI)',
-      'Zero-Trust Enterprise Architecture',
-      'API Security & Open Governance Protocols',
-      'Cloud Modernization for Public Entities',
-      'National Civil Service Pedagogical Design'
-    ],
-    skills: [
-      'Distributed Systems Engineering',
-      'Curriculum Development & Pedagogy',
-      'Zero-Trust Security Frameworks (NIST 800-207)',
-      'Data Analytics & KPI Benchmarking',
-      'Executive Leadership & Mentorship',
-      'Technical Policy Advisory'
-    ],
-    certifications: [
-      'Certified Information Systems Security Professional (CISSP #48291)',
-      'Master Government Instructor Credential (MGIC - National Board)',
-      'Certified Cloud Security Professional (CCSP - ISC2)',
-      'Open Group Certified Distinguished IT Architect (Open CA Level 3)'
-    ],
-    subjectsTaught: [
-      'Digital Public Infrastructure & Interoperability',
-      'Zero-Trust Cybersecurity Architecture',
-      'Data-Driven Decision Making & Analytics',
-      'Applied AI Foundations & Governance'
-    ],
-    interests: [
-      'Modular Open-Source Digital Goods',
-      'Verifiable Credentials & Sovereign Identity',
-      'Next-Generation Administrative Automation'
-    ]
   },
   admin: {
     id: 'usr-admin-03',

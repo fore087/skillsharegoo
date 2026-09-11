@@ -24,9 +24,6 @@ export interface User {
   workExperience?: WorkExperienceItem[];
   skills?: string[];
   interests?: string[];
-  expertise?: string[];
-  certifications?: string[];
-  subjectsTaught?: string[];
 }
 
 export interface AuthAccount extends User {
@@ -38,7 +35,6 @@ export interface Lesson {
   title: string;
   type: 'video' | 'reading' | 'interactive' | 'quiz';
   durationMinutes: number;
-  duration?: string;
   completed?: boolean;
   summary?: string;
 }
@@ -46,12 +42,10 @@ export interface Lesson {
 export interface Module {
   id: string;
   title: string;
-  durationHours?: number;
+  durationHours: number;
   lessons: Lesson[];
   isCompleted?: boolean;
 }
-
-export type CourseModule = Module;
 
 export interface Course {
   id: string;
@@ -80,8 +74,7 @@ export interface QuizQuestion {
   question: string;
   options: string[];
   correctIndex: number;
-  correctAnswer?: number;
-  explanation?: string;
+  explanation: string;
 }
 
 export interface Assessment {
@@ -89,11 +82,7 @@ export interface Assessment {
   courseId: string;
   title: string;
   questions: QuizQuestion[];
-  passingScorePercent?: number;
-  passingScore?: number;
-  deadline?: string;
-  courseTitle?: string;
-  createdAt?: string;
+  passingScorePercent: number;
 }
 
 export interface LiveSession {
@@ -144,8 +133,7 @@ export interface TraineeSubmission {
   feedback?: string;
 }
 
-export type ResourceType = 'lecture' | 'pdf' | 'presentation' | 'study_material' | 'recorded_lecture' | 'pdf_document';
-export type LearningResourceType = ResourceType;
+export type ResourceType = 'lecture' | 'pdf' | 'presentation' | 'study_material';
 
 export interface LearningResource {
   id: string;
@@ -170,8 +158,6 @@ export interface SubjectAssessment extends Assessment {
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   description: string;
   totalQuestions: number;
-  passingPercentage?: number;
-  status?: 'Active' | 'Draft' | 'Closed';
 }
 
 export interface AssessmentResultData {
@@ -211,41 +197,5 @@ export interface FeedbackSubmission {
   comment: string;
   recommend: boolean;
   createdAt: string;
-}
-
-export interface TraineePerformanceRecord {
-  id: string;
-  traineeId: string;
-  traineeName: string;
-  traineeEmail: string;
-  avatar: string;
-  department: string;
-  courseId: string;
-  courseTitle: string;
-  score: number;
-  completion: number;
-  status: 'Completed' | 'On Track' | 'Needs Support';
-  lastActive: string;
-  assessmentsCompleted: number;
-}
-
-export interface AssessmentSubmissionRecord {
-  id: string;
-  traineeId: string;
-  traineeName: string;
-  traineeEmail: string;
-  avatar: string;
-  department: string;
-  assessmentId: string;
-  assessmentTitle: string;
-  courseId: string;
-  courseTitle: string;
-  score: number;
-  totalQuestions: number;
-  percentage: number;
-  passed: boolean;
-  submittedAt: string;
-  userAnswers: Record<number, number>;
-  questions: QuizQuestion[];
 }
 

@@ -12,8 +12,6 @@ import {
   LearningResource,
   FeedbackSubmission,
   AssessmentResultData,
-  TraineePerformanceRecord,
-  AssessmentSubmissionRecord,
 } from '../types';
 import { 
   DEMO_USERS, 
@@ -31,10 +29,6 @@ import {
   LEARNING_RESOURCES,
   INITIAL_FEEDBACK,
 } from '../data/traineeData';
-import {
-  INITIAL_TRAINEE_PERFORMANCE,
-  INITIAL_ASSESSMENT_SUBMISSIONS,
-} from '../data/trainerData';
 
 interface LoginResult {
   success: boolean;
@@ -116,17 +110,6 @@ interface AppContextType {
     recommend: boolean;
   }) => void;
   updateUserProfile: (profile: Partial<User>) => void;
-
-  // Trainer Module States & Actions
-  selectedManageCourseId: string | null;
-  setSelectedManageCourseId: (courseId: string | null) => void;
-  createAssessment: (newAssessment: SubjectAssessment) => void;
-  deleteAssessment: (assessmentId: string) => void;
-  createLearningResource: (newResource: Partial<LearningResource>) => void;
-  deleteLearningResource: (resourceId: string) => void;
-  updateCourse: (courseId: string, updates: Partial<Course>) => void;
-  traineePerformanceRecords: TraineePerformanceRecord[];
-  assessmentSubmissions: AssessmentSubmissionRecord[];
 
   // Sessions & Certificates
   createLiveSession: (newSession: Partial<LiveSession>) => void;
@@ -248,49 +231,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : {};
   });
 
-  const [learningResources, setLearningResources] = useState<LearningResource[]>(() => {
-    const saved = localStorage.getItem('cc_learning_resources_v2');
-    return saved ? JSON.parse(saved) : LEARNING_RESOURCES;
-  });
-
-  const [subjectAssessments, setSubjectAssessments] = useState<SubjectAssessment[]>(() => {
-    const saved = localStorage.getItem('cc_subject_assessments_v2');
-    return saved ? JSON.parse(saved) : SUBJECT_ASSESSMENTS;
-  });
-
-  const [traineePerformanceRecords, setTraineePerformanceRecords] = useState<TraineePerformanceRecord[]>(() => {
-    const saved = localStorage.getItem('cc_trainee_performance_v2');
-    return saved ? JSON.parse(saved) : INITIAL_TRAINEE_PERFORMANCE;
-  });
-
-  const [assessmentSubmissions, setAssessmentSubmissions] = useState<AssessmentSubmissionRecord[]>(() => {
-    const saved = localStorage.getItem('cc_assessment_submissions_v2');
-    return saved ? JSON.parse(saved) : INITIAL_ASSESSMENT_SUBMISSIONS;
-  });
-
-  const [selectedManageCourseId, setSelectedManageCourseId] = useState<string | null>('crs-101');
+  const [learningResources] = useState<LearningResource[]>(LEARNING_RESOURCES);
+  const [subjectAssessments] = useState<SubjectAssessment[]>(SUBJECT_ASSESSMENTS);
 
   const [feedbackList, setFeedbackList] = useState<FeedbackSubmission[]>(() => {
     const saved = localStorage.getItem('cc_feedback_list_v1');
     return saved ? JSON.parse(saved) : INITIAL_FEEDBACK;
   });
-
-  // Sync to localStorage
-  useEffect(() => {
-    localStorage.setItem('cc_learning_resources_v2', JSON.stringify(learningResources));
-  }, [learningResources]);
-
-  useEffect(() => {
-    localStorage.setItem('cc_subject_assessments_v2', JSON.stringify(subjectAssessments));
-  }, [subjectAssessments]);
-
-  useEffect(() => {
-    localStorage.setItem('cc_trainee_performance_v2', JSON.stringify(traineePerformanceRecords));
-  }, [traineePerformanceRecords]);
-
-  useEffect(() => {
-    localStorage.setItem('cc_assessment_submissions_v2', JSON.stringify(assessmentSubmissions));
-  }, [assessmentSubmissions]);
 
   // Sync to localStorage
   useEffect(() => {
@@ -783,62 +730,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       generateCertificate(result.courseId);
     }
 
-    // Record into assessment submissions for trainer
-    const subRecord: AssessmentSubmissionRecord = {
-      id: `asub-${Date.now()}`,
-      traineeId: currentUser.id,
-      traineeName: currentUser.name,
-      traineeEmail: currentUser.email,
-      avatar: currentUser.avatar,
-      department: currentUser.department,
-      assessmentId: result.assessmentId,
-      assessmentTitle: result.assessmentTitle,
-      courseId: result.courseId,
-      courseTitle: result.courseTitle,
-      score: result.score,
-      totalQuestions: result.totalQuestions,
-      percentage: result.percentage,
-      passed: result.passed,
-      submittedAt: 'Just now',
-      userAnswers: result.userAnswers,
-      questions: result.questions,
-    };
-    setAssessmentSubmissions(prev => [subRecord, ...prev]);
-
-    // Also update or add trainee performance record
-    setTraineePerformanceRecords(prev => {
-      const existingIdx = prev.findIndex(p => p.traineeId === currentUser.id && p.courseId === result.courseId);
-      if (existingIdx >= 0) {
-        const updated = [...prev];
-        updated[existingIdx] = {
-          ...updated[existingIdx],
-          score: Math.max(updated[existingIdx].score, result.percentage),
-          assessmentsCompleted: updated[existingIdx].assessmentsCompleted + 1,
-          lastActive: 'Just now',
-          status: result.passed ? 'Completed' : updated[existingIdx].status,
-        };
-        return updated;
-      }
-      return [
-        {
-          id: `tperf-${Date.now()}`,
-          traineeId: currentUser.id,
-          traineeName: currentUser.name,
-          traineeEmail: currentUser.email,
-          avatar: currentUser.avatar,
-          department: currentUser.department,
-          courseId: result.courseId,
-          courseTitle: result.courseTitle,
-          score: result.percentage,
-          completion: result.passed ? 100 : 75,
-          status: result.passed ? 'Completed' : 'On Track',
-          lastActive: 'Just now',
-          assessmentsCompleted: 1,
-        },
-        ...prev,
-      ];
-    });
-
     setNotifications(prev => [
       {
         id: `notif-${Date.now()}`,
@@ -920,65 +811,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ]);
   };
 
-  // Trainer Actions
-  const createAssessment = (newAssessment: SubjectAssessment) => {
-    setSubjectAssessments(prev => [newAssessment, ...prev]);
-    setNotifications(prev => [
-      {
-        id: `notif-${Date.now()}`,
-        title: 'New Questionnaire Published',
-        message: `Assessment "${newAssessment.title}" has been published and is immediately usable by trainees.`,
-        time: 'Just now',
-        read: false,
-        type: 'course',
-      },
-      ...prev,
-    ]);
-  };
-
-  const deleteAssessment = (assessmentId: string) => {
-    setSubjectAssessments(prev => prev.filter(a => a.id !== assessmentId));
-  };
-
-  const createLearningResource = (newResource: Partial<LearningResource>) => {
-    const resource: LearningResource = {
-      id: `res-${Date.now()}`,
-      courseId: newResource.courseId || 'crs-101',
-      courseTitle: newResource.courseTitle || 'Digital Public Infrastructure & Interoperability',
-      title: newResource.title || 'Institutional Learning Material',
-      type: newResource.type || 'study_material',
-      description: newResource.description || 'Accredited training resource for civil service continuous development.',
-      fileSize: newResource.fileSize || '3.5 MB',
-      durationOrPages: newResource.durationOrPages || '45 mins',
-      author: newResource.author || currentUser.name,
-      dateAdded: 'Today',
-      downloadUrl: newResource.downloadUrl || '#',
-      videoUrl: newResource.videoUrl,
-      contentSnippet: newResource.contentSnippet || newResource.description,
-      tags: newResource.tags || ['Accredited', 'Continuous Education'],
-    };
-    setLearningResources(prev => [resource, ...prev]);
-    setNotifications(prev => [
-      {
-        id: `notif-${Date.now()}`,
-        title: 'Learning Resource Added',
-        message: `"${resource.title}" (${resource.type.toUpperCase()}) was uploaded to the library.`,
-        time: 'Just now',
-        read: false,
-        type: 'course',
-      },
-      ...prev,
-    ]);
-  };
-
-  const deleteLearningResource = (resourceId: string) => {
-    setLearningResources(prev => prev.filter(r => r.id !== resourceId));
-  };
-
-  const updateCourse = (courseId: string, updates: Partial<Course>) => {
-    setCourses(prev => prev.map(c => c.id === courseId ? { ...c, ...updates } : c));
-  };
-
   return (
     <AppContext.Provider
       value={{
@@ -1025,15 +857,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         feedbackList,
         submitFeedback,
         updateUserProfile,
-        selectedManageCourseId,
-        setSelectedManageCourseId,
-        createAssessment,
-        deleteAssessment,
-        createLearningResource,
-        deleteLearningResource,
-        updateCourse,
-        traineePerformanceRecords,
-        assessmentSubmissions,
         createLiveSession,
         generateCertificate,
         gradeSubmission,
