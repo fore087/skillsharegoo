@@ -33,6 +33,50 @@ export const DEMO_USERS: Record<string, User> = {
     joinedDate: 'Jan 15, 2026',
     phone: '+1 (555) 234-8901',
     status: 'Active',
+    bio: 'Senior policy and technology practitioner dedicated to modernizing civil service delivery through resilient digital public infrastructure, transparent data analytics, and ethical technology governance.',
+    qualifications: [
+      'Master of Public Administration (MPA) - Harvard Kennedy School',
+      'B.S. in Computer Science & Public Policy - Georgetown University',
+      'Certified Digital Government Leader (CDGL) - NBDCA'
+    ],
+    workExperience: [
+      {
+        id: 'exp-1',
+        role: 'Senior Digital Transformation Specialist',
+        organization: 'National Administrative Services',
+        period: '2023 – Present',
+        description: 'Directing cross-departmental data modernization, digital public infrastructure adoption, and cloud migration for 14 ministerial bodies.'
+      },
+      {
+        id: 'exp-2',
+        role: 'Policy & Analytics Officer',
+        organization: 'Ministry of Public Infrastructure',
+        period: '2021 – 2023',
+        description: 'Engineered evidence-based performance telemetry dashboards and citizen service response time benchmarking systems.'
+      },
+      {
+        id: 'exp-3',
+        role: 'Junior Technology Governance Analyst',
+        organization: 'Digital Governance Directorate',
+        period: '2019 – 2021',
+        description: 'Facilitated inter-ministerial data sharing protocol audits and open API interoperability standard evaluations.'
+      }
+    ],
+    skills: [
+      'Digital Public Infrastructure (DPI)',
+      'Data Analytics & KPI Modeling',
+      'Cybersecurity & Zero-Trust',
+      'Citizen Journey Mapping',
+      'AI Ethics & Regulatory Compliance',
+      'Agile Public Policy',
+      'Interoperability Protocols'
+    ],
+    interests: [
+      'National Citizen Identity Systems',
+      'Open Source Digital Public Goods',
+      'Algorithmic Welfare Fairness',
+      'Continuous Civil Service Upskilling'
+    ]
   },
   trainer: {
     id: 'usr-trainer-02',
@@ -45,6 +89,67 @@ export const DEMO_USERS: Record<string, User> = {
     joinedDate: 'Nov 02, 2025',
     phone: '+1 (555) 876-5432',
     status: 'Active',
+    bio: 'Lead Faculty Chair and Senior Cybersecurity & Systems Architect with over 15 years of technical leadership in digital public goods, zero-trust enterprise security, and civil service capacity development.',
+    qualifications: [
+      'Ph.D. in Computer Science & Distributed Systems - Massachusetts Institute of Technology (MIT)',
+      'M.Sc. in Public Policy & Technology Informatics - Oxford University',
+      'Senior Executive Leadership Fellow - Federal Executive Institute'
+    ],
+    workExperience: [
+      {
+        id: 'wexp-1',
+        role: 'Faculty Chair & Lead Curriculum Architect',
+        organization: 'Institute of Public Capacity Building',
+        period: '2022 – Present',
+        description: 'Directing national capacity curriculum in Digital Public Infrastructure (DPI), e-governance API protocols, and zero-trust cybersecurity for 3,400+ ministerial officials.'
+      },
+      {
+        id: 'wexp-2',
+        role: 'Chief Enterprise Systems Architect',
+        organization: 'National Digital Transformation Directorate',
+        period: '2017 – 2022',
+        description: 'Spearheaded federated civil identity gateway architecture, cross-agency data exchange protocols, and sovereign cloud modernization initiatives.'
+      },
+      {
+        id: 'wexp-3',
+        role: 'Associate Professor of Computer Systems',
+        organization: 'State University Faculty of Informatics',
+        period: '2012 – 2017',
+        description: 'Conducted accredited research in resilient distributed consensus algorithms, cryptography, and open-source public service software engineering.'
+      }
+    ],
+    expertise: [
+      'Digital Public Infrastructure (DPI)',
+      'Zero-Trust Enterprise Architecture',
+      'API Security & Open Governance Protocols',
+      'Cloud Modernization for Public Entities',
+      'National Civil Service Pedagogical Design'
+    ],
+    skills: [
+      'Distributed Systems Engineering',
+      'Curriculum Development & Pedagogy',
+      'Zero-Trust Security Frameworks (NIST 800-207)',
+      'Data Analytics & KPI Benchmarking',
+      'Executive Leadership & Mentorship',
+      'Technical Policy Advisory'
+    ],
+    certifications: [
+      'Certified Information Systems Security Professional (CISSP #48291)',
+      'Master Government Instructor Credential (MGIC - National Board)',
+      'Certified Cloud Security Professional (CCSP - ISC2)',
+      'Open Group Certified Distinguished IT Architect (Open CA Level 3)'
+    ],
+    subjectsTaught: [
+      'Digital Public Infrastructure & Interoperability',
+      'Zero-Trust Cybersecurity Architecture',
+      'Data-Driven Decision Making & Analytics',
+      'Applied AI Foundations & Governance'
+    ],
+    interests: [
+      'Modular Open-Source Digital Goods',
+      'Verifiable Credentials & Sovereign Identity',
+      'Next-Generation Administrative Automation'
+    ]
   },
   admin: {
     id: 'usr-admin-03',

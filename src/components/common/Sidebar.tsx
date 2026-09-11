@@ -16,7 +16,12 @@ import {
   Layers,
   ChevronRight,
   LogOut,
-  ShieldAlert
+  ShieldAlert,
+  MessageSquare,
+  UserCheck,
+  UploadCloud,
+  PlusCircle,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole } from '../../types';
@@ -27,7 +32,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMobile }) => {
-  const { currentRole, activeTab, setActiveTab, currentUser, switchRole, logout } = useApp();
+  const { currentRole, activeTab, setActiveTab, currentUser, switchRole, logout, certificates } = useApp();
 
   interface NavItem {
     id: string;
@@ -37,19 +42,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMobile }) => {
   }
 
   const traineeNav: NavItem[] = [
-    { id: 'overview', label: 'My Learning Hub', icon: LayoutDashboard },
-    { id: 'courses', label: 'Capacity Catalog', icon: BookOpen },
+    { id: 'overview', label: 'Trainee Dashboard', icon: LayoutDashboard },
+    { id: 'my-courses', label: 'My Courses', icon: GraduationCap },
+    { id: 'catalog', label: 'Course Catalog', icon: BookOpen },
+    { id: 'resources', label: 'Learning Resources', icon: Layers, badge: '6' },
+    { id: 'assessments', label: 'MCQ Assessments', icon: CheckSquare, badge: '4' },
+    { id: 'certificates', label: 'Certificates', icon: Award, badge: certificates.length > 0 ? String(certificates.length) : undefined },
+    { id: 'feedback', label: 'Course Feedback', icon: MessageSquare },
+    { id: 'profile', label: 'My Profile', icon: UserCheck },
     { id: 'sessions', label: 'Live Masterclasses', icon: Video, badge: '3' },
-    { id: 'certificates', label: 'Credentials & Certs', icon: Award, badge: '1' },
-    { id: 'assessment', label: 'Skills Assessment', icon: CheckSquare },
   ];
 
   const trainerNav: NavItem[] = [
-    { id: 'overview', label: 'Trainer Studio', icon: LayoutDashboard },
-    { id: 'courses', label: 'Curriculum & Courses', icon: BookOpen },
-    { id: 'sessions', label: 'Schedule Sessions', icon: Video },
-    { id: 'grading', label: 'Submissions & Grades', icon: FileCheck, badge: '2' },
-    { id: 'analytics', label: 'Cohort Insights', icon: BarChart3 },
+    { id: 'overview', label: 'Trainer Dashboard', icon: LayoutDashboard },
+    { id: 'my-courses', label: 'My Courses', icon: GraduationCap },
+    { id: 'course-management', label: 'Course Management', icon: BookOpen },
+    { id: 'manage-questionnaires', label: 'Manage Questionnaires', icon: CheckSquare },
+    { id: 'create-questionnaire', label: 'Create Questionnaire', icon: PlusCircle },
+    { id: 'library', label: 'Trainer Library', icon: Layers },
+    { id: 'upload-resource', label: 'Upload Resource', icon: UploadCloud },
+    { id: 'performance', label: 'Trainee Performance', icon: BarChart3 },
+    { id: 'assessment-results', label: 'Assessment Results', icon: Award },
+    { id: 'profile', label: 'Trainer Profile', icon: UserCheck },
+    { id: 'sessions', label: 'Live Masterclasses', icon: Video, badge: '3' },
   ];
 
   const adminNav: NavItem[] = [
