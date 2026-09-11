@@ -41,11 +41,30 @@ export const Header: React.FC<HeaderProps> = ({
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isLandingMobileMenuOpen, setIsLandingMobileMenuOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const scrollToSection = (sectionId: string) => {
+    setIsLandingMobileMenuOpen(false);
+    if (currentView !== 'landing') {
+      setCurrentView('landing');
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -128,7 +147,48 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
 
-          {/* Center: Live Role Demo Switcher */}
+          {/* Center: Landing Navigation (Home, Courses, Trainers, Resources, About) */}
+          {currentView !== 'dashboard' && (
+            <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+              <button
+                id="nav-link-home"
+                onClick={() => scrollToSection('home')}
+                className="px-3 py-1.5 text-xs lg:text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100/80 rounded-lg transition-colors"
+              >
+                Home
+              </button>
+              <button
+                id="nav-link-courses"
+                onClick={() => scrollToSection('courses')}
+                className="px-3 py-1.5 text-xs lg:text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100/80 rounded-lg transition-colors"
+              >
+                Courses
+              </button>
+              <button
+                id="nav-link-trainers"
+                onClick={() => scrollToSection('trainers')}
+                className="px-3 py-1.5 text-xs lg:text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100/80 rounded-lg transition-colors"
+              >
+                Trainers
+              </button>
+              <button
+                id="nav-link-resources"
+                onClick={() => scrollToSection('resources')}
+                className="px-3 py-1.5 text-xs lg:text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100/80 rounded-lg transition-colors"
+              >
+                Resources
+              </button>
+              <button
+                id="nav-link-about"
+                onClick={() => scrollToSection('about')}
+                className="px-3 py-1.5 text-xs lg:text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100/80 rounded-lg transition-colors"
+              >
+                About
+              </button>
+            </nav>
+          )}
+
+          {/* Center: Live Role Demo Switcher (Dashboard View) */}
           {currentView === 'dashboard' && (
             <div className="hidden xl:flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
               <span className="text-[11px] font-bold text-slate-500 uppercase px-2">Demo Role:</span>
@@ -335,21 +395,89 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   id="landing-login-btn"
                   onClick={() => setCurrentView('login')}
-                  className="px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
                 >
-                  Sign In
+                  Login
                 </button>
                 <button
                   id="landing-signup-btn"
                   onClick={() => setCurrentView('signup')}
-                  className="px-4 py-1.5 text-xs sm:text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-xs transition-colors"
+                  className="px-4 py-1.5 text-xs sm:text-sm font-semibold bg-blue-700 hover:bg-blue-800 text-white rounded-lg shadow-xs transition-colors"
                 >
-                  Register
+                  Sign Up
+                </button>
+
+                {/* Mobile Menu Toggle Button */}
+                <button
+                  id="landing-mobile-menu-toggle-btn"
+                  onClick={() => setIsLandingMobileMenuOpen(!isLandingMobileMenuOpen)}
+                  className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+                  aria-label="Toggle navigation links"
+                >
+                  {isLandingMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </button>
               </div>
             )}
           </div>
         </div>
+
+        {/* Mobile Navigation Drawer for Landing View */}
+        {currentView !== 'dashboard' && isLandingMobileMenuOpen && (
+          <div className="md:hidden py-3 border-t border-slate-200 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="flex flex-col space-y-1">
+              <button
+                onClick={() => scrollToSection('home')}
+                className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded-lg"
+              >
+                Home
+              </button>
+              <button
+                onClick={() => scrollToSection('courses')}
+                className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded-lg"
+              >
+                Courses
+              </button>
+              <button
+                onClick={() => scrollToSection('trainers')}
+                className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded-lg"
+              >
+                Trainers
+              </button>
+              <button
+                onClick={() => scrollToSection('resources')}
+                className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded-lg"
+              >
+                Resources
+              </button>
+              <button
+                onClick={() => scrollToSection('about')}
+                className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded-lg"
+              >
+                About
+              </button>
+              <div className="pt-2 border-t border-slate-100 flex gap-2">
+                <button
+                  onClick={() => {
+                    setIsLandingMobileMenuOpen(false);
+                    setCurrentView('login');
+                  }}
+                  className="flex-1 py-2 text-xs font-semibold text-center text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => {
+                    setIsLandingMobileMenuOpen(false);
+                    setCurrentView('signup');
+                  }}
+                  className="flex-1 py-2 text-xs font-semibold text-center text-white bg-blue-700 hover:bg-blue-800 rounded-lg"
+                >
+                  Sign Up
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

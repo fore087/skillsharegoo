@@ -75,8 +75,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Domain States with localStorage sync
   const [courses, setCourses] = useState<Course[]>(() => {
-    const saved = localStorage.getItem('cc_courses');
-    return saved ? JSON.parse(saved) : INITIAL_COURSES;
+    const saved = localStorage.getItem('cc_courses_v2');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].title === 'Data Analytics') {
+          return parsed;
+        }
+      } catch (e) {
+        // fallback
+      }
+    }
+    return INITIAL_COURSES;
   });
 
   const [liveSessions, setLiveSessions] = useState<LiveSession[]>(() => {
@@ -106,7 +116,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Sync to localStorage
   useEffect(() => {
-    localStorage.setItem('cc_courses', JSON.stringify(courses));
+    localStorage.setItem('cc_courses_v2', JSON.stringify(courses));
   }, [courses]);
 
   useEffect(() => {
