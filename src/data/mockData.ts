@@ -89,6 +89,67 @@ export const DEMO_USERS: Record<string, User> = {
     joinedDate: 'Nov 02, 2025',
     phone: '+1 (555) 876-5432',
     status: 'Active',
+    bio: 'Dr. Marcus Vance is a faculty chair, enterprise systems architect, and public sector educator with over 16 years of experience training senior civil servants and engineering mission-critical government software architectures. His work focuses on empowering public institutions with resilient open-source digital public goods, zero-trust cybersecurity, and transparent data-driven decision frameworks.',
+    qualifications: [
+      'Ph.D. in Information Systems & Public Policy - Carnegie Mellon University (Heinz College)',
+      'Master of Science in Cybersecurity & Distributed Systems - MIT',
+      'Bachelor of Science in Software Engineering & Applied Mathematics - Stanford University',
+      'Postdoctoral Fellowship in Digital Government Interoperability - Oxford Internet Institute'
+    ],
+    workExperience: [
+      {
+        id: 'exp-tr-1',
+        role: 'Distinguished Faculty Lead & Chair of Digital Public Systems',
+        organization: 'Institute of Public Capacity Building & National Civil Service Academy',
+        period: '2020 – Present',
+        description: 'Overseeing national digital governance curriculum development, accreditation standards, and senior civil servant leadership cohorts across 24 ministries.'
+      },
+      {
+        id: 'exp-tr-2',
+        role: 'Principal Architect of Public Data Infrastructure',
+        organization: 'Central Technology & Digital Governance Directorate',
+        period: '2016 – 2020',
+        description: 'Directed the design and deployment of sovereign interoperability API gateways, privacy-preserving citizen registries, and decentralized identity rails.'
+      },
+      {
+        id: 'exp-tr-3',
+        role: 'Senior Research Fellow in Algorithmic Governance',
+        organization: 'Center for Technology in Government (CTG)',
+        period: '2012 – 2016',
+        description: 'Authored 16 peer-reviewed frameworks on civil servant AI literacy, automated administrative fairness, and public-sector data ethics.'
+      }
+    ],
+    expertise: [
+      'Digital Public Infrastructure (DPI)',
+      'Interoperable Microservices & OpenAPI Standards',
+      'Public Sector Cybersecurity & Zero-Trust Architecture',
+      'National AI Ethics & Regulatory Governance Sandboxes',
+      'Citizen-Centric Service Delivery Systems',
+      'Asynchronous Event-Driven Civil Registries'
+    ],
+    skills: [
+      'Curriculum & Assessment Engineering',
+      'Enterprise Architecture (TOGAF / DPG Standards)',
+      'Data Analytics & Causal Policy Inference',
+      'Executive Leadership Mentorship',
+      'Zero-Trust Threat Modeling',
+      'Verifiable Credentials & Decentralized Identifiers (DIDs)',
+      'Continuous Learning Telemetry Design'
+    ],
+    certifications: [
+      'Certified Master Government Educator (CMGE) - Global Public Service Alliance (2024)',
+      'Senior Fellow in Public Digital Architecture (SFPDA) - UN e-Gov Taskforce (2023)',
+      'Certified Information Systems Security Professional - Architecture (CISSP-ISSAP) (2022)',
+      'TOGAF 9.2 Certified Enterprise Systems Architect (2021)',
+      'National Board of Digital Capacity Accreditation (NBDCA) Level-V Master Assessor (2020)'
+    ],
+    subjectsTaught: [
+      'DPI-101: Digital Public Infrastructure & Sovereign Architecture',
+      'DAT-202: Evidence-Based Data Analytics & Citizen Metrics',
+      'CYB-303: Zero-Trust Defense & Public Sector Threat Mitigation',
+      'AIG-404: Artificial Intelligence Ethics & Regulatory Compliance',
+      'LDR-505: Agile Delivery & Change Leadership in Government'
+    ]
   },
   admin: {
     id: 'usr-admin-03',

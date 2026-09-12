@@ -12,6 +12,8 @@ import {
   LearningResource,
   FeedbackSubmission,
   AssessmentResultData,
+  TraineePerformanceRecord,
+  AssessmentSubmissionRecord,
 } from '../types';
 import { 
   DEMO_USERS, 
@@ -29,6 +31,10 @@ import {
   LEARNING_RESOURCES,
   INITIAL_FEEDBACK,
 } from '../data/traineeData';
+import {
+  INITIAL_TRAINEE_PERFORMANCE,
+  INITIAL_ASSESSMENT_SUBMISSIONS,
+} from '../data/trainerData';
 
 interface LoginResult {
   success: boolean;
@@ -95,6 +101,16 @@ interface AppContextType {
   traineeAssessmentHistory: Record<string, AssessmentResultData>;
   learningResources: LearningResource[];
   subjectAssessments: SubjectAssessment[];
+  addLearningResource: (resource: LearningResource) => void;
+  deleteLearningResource: (id: string) => void;
+  addSubjectAssessment: (assessment: SubjectAssessment) => void;
+  updateSubjectAssessment: (assessment: SubjectAssessment) => void;
+  deleteSubjectAssessment: (id: string) => void;
+  traineePerformance: TraineePerformanceRecord[];
+  allAssessmentSubmissions: AssessmentSubmissionRecord[];
+  selectedManageCourseId: string | null;
+  setSelectedManageCourseId: (id: string | null) => void;
+  manageCourse: (courseId: string) => void;
   feedbackList: FeedbackSubmission[];
   submitFeedback: (feedback: {
     courseId: string;
@@ -231,13 +247,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : {};
   });
 
-  const [learningResources] = useState<LearningResource[]>(LEARNING_RESOURCES);
-  const [subjectAssessments] = useState<SubjectAssessment[]>(SUBJECT_ASSESSMENTS);
+  const [learningResources, setLearningResources] = useState<LearningResource[]>(() => {
+    const saved = localStorage.getItem('cc_learning_resources_v3');
+    return saved ? JSON.parse(saved) : LEARNING_RESOURCES;
+  });
+
+  const [subjectAssessments, setSubjectAssessments] = useState<SubjectAssessment[]>(() => {
+    const saved = localStorage.getItem('cc_subject_assessments_v3');
+    return saved ? JSON.parse(saved) : SUBJECT_ASSESSMENTS;
+  });
+
+  const [traineePerformance, setTraineePerformance] = useState<TraineePerformanceRecord[]>(() => {
+    const saved = localStorage.getItem('cc_trainee_perf_v2');
+    return saved ? JSON.parse(saved) : INITIAL_TRAINEE_PERFORMANCE;
+  });
+
+  const [allAssessmentSubmissions, setAllAssessmentSubmissions] = useState<AssessmentSubmissionRecord[]>(() => {
+    const saved = localStorage.getItem('cc_assessment_submissions_v2');
+    return saved ? JSON.parse(saved) : INITIAL_ASSESSMENT_SUBMISSIONS;
+  });
+
+  const [selectedManageCourseId, setSelectedManageCourseId] = useState<string | null>('crs-101');
 
   const [feedbackList, setFeedbackList] = useState<FeedbackSubmission[]>(() => {
     const saved = localStorage.getItem('cc_feedback_list_v1');
     return saved ? JSON.parse(saved) : INITIAL_FEEDBACK;
   });
+
+  // Sync to localStorage
+  useEffect(() => {
+    localStorage.setItem('cc_learning_resources_v3', JSON.stringify(learningResources));
+  }, [learningResources]);
+
+  useEffect(() => {
+    localStorage.setItem('cc_subject_assessments_v3', JSON.stringify(subjectAssessments));
+  }, [subjectAssessments]);
+
+  useEffect(() => {
+    localStorage.setItem('cc_trainee_perf_v2', JSON.stringify(traineePerformance));
+  }, [traineePerformance]);
+
+  useEffect(() => {
+    localStorage.setItem('cc_assessment_submissions_v2', JSON.stringify(allAssessmentSubmissions));
+  }, [allAssessmentSubmissions]);
 
   // Sync to localStorage
   useEffect(() => {
@@ -726,6 +778,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       [result.assessmentId]: result,
     }));
 
+    // Record submission for trainer results view
+    const newSubmission: AssessmentSubmissionRecord = {
+      id: `sub-asm-${Date.now()}`,
+      assessmentId: result.assessmentId,
+      assessmentTitle: result.assessmentTitle,
+      courseId: result.courseId,
+      courseTitle: result.courseTitle,
+      traineeId: currentUser.id,
+      traineeName: currentUser.name,
+      traineeEmail: currentUser.email,
+      traineeAvatar: currentUser.avatar,
+      score: result.correctCount,
+      totalQuestions: result.totalQuestions,
+      percentage: result.percentage,
+      passed: result.passed,
+      submittedAt: 'Just now',
+      userAnswers: result.userAnswers,
+    };
+    setAllAssessmentSubmissions(prev => [newSubmission, ...prev]);
+
+    // Update trainee performance record
+    setTraineePerformance(prev => {
+      const idx = prev.findIndex(p => p.traineeId === currentUser.id && p.courseId === result.courseId);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = {
+          ...updated[idx],
+          score: Math.round((updated[idx].score + result.percentage) / 2),
+          assessmentsCompleted: updated[idx].assessmentsCompleted + 1,
+          lastActive: 'Just now',
+          status: result.passed ? 'Certified' : updated[idx].status,
+        };
+        return updated;
+      } else {
+        const newRecord: TraineePerformanceRecord = {
+          id: `perf-${Date.now()}`,
+          traineeId: currentUser.id,
+          traineeName: currentUser.name,
+          traineeEmail: currentUser.email,
+          avatar: currentUser.avatar,
+          department: currentUser.department || 'Public Administration',
+          courseId: result.courseId,
+          courseTitle: result.courseTitle,
+          score: result.percentage,
+          completion: 80,
+          status: result.passed ? 'Certified' : 'In Progress',
+          lastActive: 'Just now',
+          assessmentsCompleted: 1,
+          totalAssessments: 4,
+        };
+        return [newRecord, ...prev];
+      }
+    });
+
     if (result.passed) {
       generateCertificate(result.courseId);
     }
@@ -741,6 +847,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       },
       ...prev
     ]);
+  };
+
+  const addLearningResource = (resource: LearningResource) => {
+    setLearningResources(prev => [resource, ...prev]);
+    setNotifications(prev => [
+      {
+        id: `notif-${Date.now()}`,
+        title: 'Learning Resource Uploaded',
+        message: `"${resource.title}" (${resource.type.toUpperCase()}) is now available in the Trainer and Trainee Library.`,
+        time: 'Just now',
+        read: false,
+        type: 'course'
+      },
+      ...prev
+    ]);
+  };
+
+  const deleteLearningResource = (id: string) => {
+    setLearningResources(prev => prev.filter(r => r.id !== id));
+  };
+
+  const addSubjectAssessment = (assessment: SubjectAssessment) => {
+    setSubjectAssessments(prev => [assessment, ...prev]);
+    setNotifications(prev => [
+      {
+        id: `notif-${Date.now()}`,
+        title: 'New Questionnaire Published',
+        message: `"${assessment.title}" is now active and accessible to trainees in their assessment hub.`,
+        time: 'Just now',
+        read: false,
+        type: 'course'
+      },
+      ...prev
+    ]);
+  };
+
+  const updateSubjectAssessment = (assessment: SubjectAssessment) => {
+    setSubjectAssessments(prev => prev.map(a => a.id === assessment.id ? assessment : a));
+  };
+
+  const deleteSubjectAssessment = (id: string) => {
+    setSubjectAssessments(prev => prev.filter(a => a.id !== id));
+  };
+
+  const manageCourse = (courseId: string) => {
+    setSelectedManageCourseId(courseId);
+    setActiveTab('course-management');
   };
 
   const retakeAssessment = (assessmentId: string) => {
@@ -854,6 +1007,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         traineeAssessmentHistory,
         learningResources,
         subjectAssessments,
+        addLearningResource,
+        deleteLearningResource,
+        addSubjectAssessment,
+        updateSubjectAssessment,
+        deleteSubjectAssessment,
+        traineePerformance,
+        allAssessmentSubmissions,
+        selectedManageCourseId,
+        setSelectedManageCourseId,
+        manageCourse,
         feedbackList,
         submitFeedback,
         updateUserProfile,

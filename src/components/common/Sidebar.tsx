@@ -18,7 +18,11 @@ import {
   LogOut,
   ShieldAlert,
   MessageSquare,
-  UserCheck
+  UserCheck,
+  FileQuestion,
+  PlusCircle,
+  Upload,
+  Settings
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole } from '../../types';
@@ -29,7 +33,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMobile }) => {
-  const { currentRole, activeTab, setActiveTab, currentUser, switchRole, logout, certificates } = useApp();
+  const { currentRole, activeTab, setActiveTab, currentUser, switchRole, logout, certificates, subjectAssessments, learningResources } = useApp();
 
   interface NavItem {
     id: string;
@@ -50,12 +54,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMobile }) => {
     { id: 'sessions', label: 'Live Masterclasses', icon: Video, badge: '3' },
   ];
 
+  // 10 Exact Pages for Trainer as requested
   const trainerNav: NavItem[] = [
-    { id: 'overview', label: 'Trainer Studio', icon: LayoutDashboard },
-    { id: 'courses', label: 'Curriculum & Courses', icon: BookOpen },
-    { id: 'sessions', label: 'Schedule Sessions', icon: Video },
-    { id: 'grading', label: 'Submissions & Grades', icon: FileCheck, badge: '2' },
-    { id: 'analytics', label: 'Cohort Insights', icon: BarChart3 },
+    { id: 'overview', label: 'Trainer Dashboard', icon: LayoutDashboard },
+    { id: 'trainer-profile', label: 'Trainer Profile', icon: UserCheck },
+    { id: 'my-courses', label: 'My Courses', icon: BookOpen },
+    { id: 'course-management', label: 'Course Management', icon: Settings },
+    { id: 'create-questionnaire', label: 'Create Questionnaire', icon: PlusCircle },
+    { id: 'manage-questionnaires', label: 'Manage Questionnaires', icon: FileQuestion, badge: String(subjectAssessments.length) },
+    { id: 'trainer-library', label: 'Trainer Library', icon: Layers, badge: String(learningResources.length) },
+    { id: 'upload-resource', label: 'Upload Learning Resource', icon: Upload },
+    { id: 'trainee-performance', label: 'Trainee Performance', icon: BarChart3 },
+    { id: 'assessment-results', label: 'Assessment Results', icon: Award },
   ];
 
   const adminNav: NavItem[] = [
@@ -123,20 +133,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMobile }) => {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
+                const activeBgClass = effectiveRole === 'trainer' 
+                  ? 'bg-emerald-800 text-white shadow-2xs' 
+                  : effectiveRole === 'admin' 
+                  ? 'bg-purple-800 text-white shadow-2xs' 
+                  : 'bg-blue-600 text-white shadow-xs';
+
                 return (
                   <button
                     key={item.id}
                     id={`sidebar-nav-${item.id}`}
                     onClick={() => handleSelect(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-blue-600 text-white shadow-xs'
+                        ? activeBgClass
                         : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-                      <span>{item.label}</span>
+                      <Icon className={`w-4 h-4 ${isActive ? 'text-white' : effectiveRole === 'trainer' ? 'text-emerald-700' : 'text-slate-500'}`} />
+                      <span className="truncate">{item.label}</span>
                     </div>
                     {item.badge && (
                       <span

@@ -32,7 +32,7 @@ import { Modal } from '../common/Modal';
 export const LearningResourcesView: React.FC = () => {
   const { learningResources, courses } = useApp();
 
-  const [activeTypeFilter, setActiveTypeFilter] = useState<'all' | 'video' | 'pdf' | 'presentation' | 'study_material'>('all');
+  const [activeTypeFilter, setActiveTypeFilter] = useState<'all' | 'lecture' | 'pdf' | 'presentation' | 'study_material'>('all');
   const [selectedCourseFilter, setSelectedCourseFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -163,7 +163,7 @@ export const LearningResourcesView: React.FC = () => {
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           {[
             { id: 'all', label: 'All Resources' },
-            { id: 'video', label: 'Recorded Lectures' },
+            { id: 'lecture', label: 'Recorded Lectures' },
             { id: 'pdf', label: 'Policy PDFs & Briefs' },
             { id: 'presentation', label: 'Slide Decks' },
             { id: 'study_material', label: 'Study & Reference Toolkits' },

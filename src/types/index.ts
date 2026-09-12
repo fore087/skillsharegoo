@@ -24,6 +24,9 @@ export interface User {
   workExperience?: WorkExperienceItem[];
   skills?: string[];
   interests?: string[];
+  expertise?: string[];
+  certifications?: string[];
+  subjectsTaught?: string[];
 }
 
 export interface AuthAccount extends User {
@@ -43,6 +46,7 @@ export interface Module {
   id: string;
   title: string;
   durationHours: number;
+  order?: number;
   lessons: Lesson[];
   isCompleted?: boolean;
 }
@@ -52,7 +56,7 @@ export interface Course {
   title: string;
   code: string;
   department: string;
-  category: 'Governance' | 'Technology & AI' | 'Cybersecurity' | 'Public Administration' | 'Data Analytics' | 'Project Leadership';
+  category: 'Governance' | 'Technology & AI' | 'Cybersecurity' | 'Public Administration' | 'Data Analytics' | 'Project Leadership' | string;
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   durationWeeks: number;
   totalHours: number;
@@ -70,19 +74,22 @@ export interface Course {
 }
 
 export interface QuizQuestion {
-  id: string;
+  id: string | number;
   question: string;
   options: string[];
-  correctIndex: number;
+  correctIndex?: number;
+  correctAnswer?: number;
   explanation: string;
 }
 
 export interface Assessment {
   id: string;
   courseId: string;
+  courseTitle?: string;
   title: string;
   questions: QuizQuestion[];
-  passingScorePercent: number;
+  passingScorePercent?: number;
+  passingScore?: number;
 }
 
 export interface LiveSession {
@@ -143,9 +150,12 @@ export interface LearningResource {
   type: ResourceType;
   description: string;
   fileSize?: string;
-  durationOrPages: string;
+  durationOrPages?: string;
+  duration?: string;
+  pages?: string;
   author: string;
-  dateAdded: string;
+  dateAdded?: string;
+  uploadDate?: string;
   downloadUrl?: string;
   videoUrl?: string;
   contentSnippet?: string;
@@ -158,6 +168,46 @@ export interface SubjectAssessment extends Assessment {
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   description: string;
   totalQuestions: number;
+  deadline?: string;
+  createdAt?: string;
+  status?: 'Active' | 'Draft' | 'Archived';
+  attemptsCount?: number;
+  avgScore?: number;
+}
+
+export interface TraineePerformanceRecord {
+  id: string;
+  traineeId: string;
+  traineeName: string;
+  traineeEmail: string;
+  avatar: string;
+  department: string;
+  courseId: string;
+  courseTitle: string;
+  score: number; // percentage, e.g. 88
+  completion: number; // percentage, e.g. 75
+  status: 'Completed' | 'In Progress' | 'Needs Attention' | 'Certified';
+  lastActive: string;
+  assessmentsCompleted: number;
+  totalAssessments: number;
+}
+
+export interface AssessmentSubmissionRecord {
+  id: string;
+  assessmentId: string;
+  assessmentTitle: string;
+  courseId: string;
+  courseTitle: string;
+  traineeId: string;
+  traineeName: string;
+  traineeEmail: string;
+  traineeAvatar: string;
+  score: number;
+  totalQuestions: number;
+  percentage: number;
+  passed: boolean;
+  submittedAt: string;
+  userAnswers: Record<number, number>;
 }
 
 export interface AssessmentResultData {
